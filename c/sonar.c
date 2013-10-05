@@ -10,13 +10,24 @@
 #define SET_VALS 0
 #define PING 1
 #define GET_TIME 2
+#define HALF_INT (.5 * 65536)
 
 _TIMER * blipTimer = 0;
 _PIN * signalOut = 0;
+_PIN * inputPin = 0;
+
+uint16_t sensorTime = 0;
+uint16_t trailingTime = 0; //Follow the 40khz
+
+void resetTimer(_TIMER * timer)
+{
+  timer_stop(timer);
+  timer_start(timer);
+}
 
 void pingFinished(_TIMER * timer)
 {
-  pin_write(&D[4], 0);
+  pin_write(signalOut, 0);
   timer_stop(timer);
 }
 
@@ -36,16 +47,18 @@ void VendorRequests(void)
             BD[EP0IN].status = 0xC8;    // send packet as DATA1, set UOWN bit
             break;
         case PING:
-            pin_write(&D[4], MAX_INT);
-            timer_start(&timer4);
+            pin_write(signalOut, HALF_INT);
+            resetTimer(&timer1);
+            sensorTime = 0;
+            trailingTime = 0;
             timer_after(&timer4, 0.0f, 1, pingFinished);
             BD[EP0IN].bytecount = 0;    // set EP0 IN byte count to 0
             BD[EP0IN].status = 0xC8;    // send packet as DATA1, set UOWN bit
             break;
         case GET_TIME:
             temp.w = sensorTime;
-            BD[EPOIN].address[0] = temp[0];
-            BD[EPOIN].address[1] = temp[1];
+            BD[EP0IN].address[0] = temp.b[0];
+            BD[EP0IN].address[1] = temp.b[1];
             BD[EP0IN].bytecount = 2;    // set EP0 IN byte count to 0
             BD[EP0IN].status = 0xC8;    // send packet as DATA1, set UOWN bit
             break;
@@ -75,21 +88,49 @@ int16_t main(void) {
     init_pin();
     init_oc();
 
+    InitUSB();                              // initialize the USB registers and serial interface engine
+    while (USB_USWSTAT!=CONFIG_STATE) {     // while the peripheral is not configured...
+        ServiceUSB();                       // ...service USB requests
+    }
+
     signalOut = &D[4];
+    pin_digitalOut(signalOut);
+    inputPin = &D[1];
+    pin_digitalIn(inputPin);
+
+    timer_setFreq(&timer5, 1e3);
+
     blipTimer = &timer4;
 
-    setFreq(blipTimer, 1e1);
+    timer_setFreq(blipTimer, 1e1);
+    timer_setFreq(&timer1, 2e6);
     //oc_servo(&oc1, &D[2], &timer1, 20e-3, 5.5e-4, 23.8e-4, (uint16_t)(0.9*65536));
     //oc_servo(&oc2, &D[3], &timer2, 20e-3, 6e-4, 25e-4, (uint16_t)(0.9*65536)); //try using the same timer
-    oc_pwm(&oc2, signalOut, NULL, 40e3, (uint16_t)(.5f * 65536)); //try using the same timer
+    oc_pwm(&oc2, signalOut, NULL, 40e3, (uint16_t)(0)); //try using the same timer
+    pin_write(signalOut, 0);
 
+    uint16_t lastTime = 0;
+    uint16_t lastInput = 0;
 
-    //InitUSB();                              // initialize the USB registers and serial interface engine
-    //while (USB_USWSTAT!=CONFIG_STATE) {     // while the peripheral is not configured...
-        //ServiceUSB();                       // ...service USB requests
-    //}
     while (1) {
-        ServiceUSB();                       // service any pending USB requests
+        ServiceUSB(); // service any pending USB requests
+        pin_read(inputPin);
+        uint16_t input = pin_read(inputPin);
+        uint16_t currentTime = timer_read(&timer1);
+        sensorTime = currentTime;
+
+        if (lastInput == 0 && input == 1) { //Rising Edge
+          uint16_t diffBetweenEdges = currentTime - trailingTime;
+          //if (diffBetweenEdges > 50000) {
+          if (diffBetweenEdges > 00) {
+            //Found a good edge to trigger on
+            //sensorTime = currentTime;
+          }
+          trailingTime = currentTime;
+        }
+        lastTime = currentTime;
+        lastInput = input;
+
         /*pin_write(&D[4], (uint16_t) (0 * 65535));
         timer_setFreq(&timer4, 1e1);
         timer_start(&timer4);

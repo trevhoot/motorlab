@@ -3,24 +3,24 @@
 ** All rights reserved.
 **
 ** Redistribution and use in source and binary forms, with or without
-** modification, are permitted provided that the following conditions are met: 
-** 
-**     1. Redistributions of source code must retain the above copyright 
-**        notice, this list of conditions and the following disclaimer. 
-**     2. Redistributions in binary form must reproduce the above copyright 
-**        notice, this list of conditions and the following disclaimer in the 
-**        documentation and/or other materials provided with the distribution. 
+** modification, are permitted provided that the following conditions are met:
 **
-** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
-** AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
-** IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
-** ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE 
-** LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
-** CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
-** SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-** INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
-** CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
-** ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+**     1. Redistributions of source code must retain the above copyright
+**        notice, this list of conditions and the following disclaimer.
+**     2. Redistributions in binary form must reproduce the above copyright
+**        notice, this list of conditions and the following disclaimer in the
+**        documentation and/or other materials provided with the distribution.
+**
+** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+** AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+** IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+** ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+** LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+** CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+** SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+** INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+** CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+** ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ** POSSIBILITY OF SUCH DAMAGE.
 */
 #include <p24FJ128GB206.h>
@@ -68,20 +68,20 @@ void __attribute__((interrupt, auto_psv)) _T5Interrupt(void) {
 }
 
 void init_timer(void) {
-    timer_init(&timer1, (uint16_t *)&T1CON, (uint16_t *)&PR1, (uint16_t *)&TMR1, 
+    timer_init(&timer1, (uint16_t *)&T1CON, (uint16_t *)&PR1, (uint16_t *)&TMR1,
                (uint16_t *)&IFS0, (uint16_t *)&IEC0, 3, 4, 11);
-    timer_init(&timer2, (uint16_t *)&T2CON, (uint16_t *)&PR2, (uint16_t *)&TMR2, 
+    timer_init(&timer2, (uint16_t *)&T2CON, (uint16_t *)&PR2, (uint16_t *)&TMR2,
                (uint16_t *)&IFS0, (uint16_t *)&IEC0, 7, 0, 12);
-    timer_init(&timer3, (uint16_t *)&T3CON, (uint16_t *)&PR3, (uint16_t *)&TMR3, 
+    timer_init(&timer3, (uint16_t *)&T3CON, (uint16_t *)&PR3, (uint16_t *)&TMR3,
                (uint16_t *)&IFS0, (uint16_t *)&IEC0, 8, 1, 13);
-    timer_init(&timer4, (uint16_t *)&T4CON, (uint16_t *)&PR4, (uint16_t *)&TMR4, 
+    timer_init(&timer4, (uint16_t *)&T4CON, (uint16_t *)&PR4, (uint16_t *)&TMR4,
                (uint16_t *)&IFS1, (uint16_t *)&IEC1, 11, 2, 14);
-    timer_init(&timer5, (uint16_t *)&T5CON, (uint16_t *)&PR5, (uint16_t *)&TMR5, 
+    timer_init(&timer5, (uint16_t *)&T5CON, (uint16_t *)&PR5, (uint16_t *)&TMR5,
                (uint16_t *)&IFS1, (uint16_t *)&IEC1, 12, 3, 15);
 }
 
-void timer_init(_TIMER *self, uint16_t *TxCON, uint16_t *PRx, 
-                uint16_t *TMRx, uint16_t *IFSy, uint16_t *IECy, 
+void timer_init(_TIMER *self, uint16_t *TxCON, uint16_t *PRx,
+                uint16_t *TMRx, uint16_t *IFSy, uint16_t *IECy,
                 uint8_t flagbit, uint16_t octselnum, uint16_t ocsyncselnum) {
     self->TxCON = TxCON;
     self->PRx = PRx;
@@ -168,7 +168,7 @@ void timer_disableInterrupt(_TIMER *self) {
     bitclear(self->IECy, self->flagbit);
 }
 
-void timer_every(_TIMER *self, floa interval, void (*callback)(_TIMER *self)) {
+void timer_every(_TIMER *self, float interval, void (*callback)(_TIMER *self)) {
     timer_disableInterrupt(self);
     timer_setPeriod(self, interval);
     self->aftercount = 0;
@@ -178,7 +178,7 @@ void timer_every(_TIMER *self, floa interval, void (*callback)(_TIMER *self)) {
     timer_start(self);
 }
 
-void timer_after(_TIMER *self, float delay, uint16_t num_times, 
+void timer_after(_TIMER *self, float delay, uint16_t num_times,
                  void (*callback)(_TIMER *self)) {
     timer_disableInterrupt(self);
     timer_setPeriod(self, delay);

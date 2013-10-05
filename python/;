@@ -1,0 +1,11 @@
+import sys
+import device as dv
+import time
+
+print "Starting scan to", sys.argv[1]
+
+#on scale of 0-100
+delta_yaw = 5;
+delta_pitch = 5;
+
+
