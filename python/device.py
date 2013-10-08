@@ -22,12 +22,15 @@ class Device:
             self.dev.ctrl_transfer(0x40, self.SET_VALS, int(val1), int(val2))
         except usb.core.USBError:
             print "Could not send SET_VALS vendor request."
+
     def set_pan(self, val):
       self.pan = val
       self.set_positions(self.pan, self.tilt)
+
     def set_tilt(self, val):
       self.tilt = val
       self.set_positions(self.pan, self.tilt)
+
     def read_val(self):
        try:
            ret = self.dev.ctrl_transfer(0xC0, self.GET_VAL, 0, 0, 4)
@@ -35,18 +38,17 @@ class Device:
            print "Could not send GET_VAL vendor request."
        else:
            return int(ret[0]) + int(ret[1])*256;
+
     def time_to_dist(self, time):
-      #ms_elapsed = time * 31.25 * 10**-6
-      return time
+        dist = time * 340. / 2 / 1200000
+      	return time
 
     def ping(self):
         vals = []
         try:
             self.dev.ctrl_transfer(0x40, self.PING)
             startTime = time.time()
-            #wait for 20 ms
-            #TODO don't block here
-            while (time.time() - startTime < (1/1000.0)*20):
+            while (time.time() - startTime < 0.05):
               value = self.read_val()
               if not value in vals:
                 vals.append(self.time_to_dist(value))
