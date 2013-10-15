@@ -1,0 +1,20 @@
+Mechanical
+- CAD motor housing, haptic interface
+- Manufacture and assemble parts
+
+Electrical
+- Characterize motor (Stall Torque, free spinning frequency)
+- Determine Ke, Kt (remember, T = Ke * i, w / Kt = V ... or something)
+- Use minor feedback loops to ensure proper voltage/current control (?)
+
+Firmware
+- Read encoder, determine speed and position
+- Receive command from computer
+- Write voltage for motor control
+- (Poll for new value every now and then? Currently, it's all interrupt driven from the UI side...)
+
+Software
+- Get and set values from firmware. 
+- Use position to make a "spring"
+- GUI to set k and B
+
