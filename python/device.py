@@ -3,55 +3,82 @@ import usb.core
 import time
 class Device:
 
-    def __init__(self):
-        self.SET_VALS = 0
-        self.PING = 1
-        self.GET_VAL = 2
-        self.dev = usb.core.find(idVendor = 0x6666, idProduct = 0x0003)
-        if self.dev is None:
-            raise ValueError('no USB device found matching idVendor = 0x6666 and idProduct = 0x0003')
-        self.dev.set_configuration()
-        self.pan = 0;
-        self.tilt = 0;
+	def __init__(self):
+		self.SET_SPEED = 0
+		self.GET_SPEED = 1
+		self.GET_EMF = 2
+		self.GET_CURRENT = 3
+		self.SET_CONSTANTS = 4
+		self.GET_TICKCOUNT = 5
+		self.dev = usb.core.find(idVendor = 0x6666, idProduct = 0x0003)
+		if self.dev is None:
+			raise ValueError('no USB device found matching idVendor = 0x6666 and idProduct = 0x0003')
+		self.dev.set_configuration()
+		self.speed = 0
+		self.invert = 0
+		self.k = 0
+		self.B = 0
 
-    def close(self):
-        self.dev = None
+	def close(self):
+		self.dev = None
 
-    def set_positions(self, val1, val2):
-        try:
-            self.dev.ctrl_transfer(0x40, self.SET_VALS, int(val1), int(val2))
-        except usb.core.USBError:
-            print "Could not send SET_VALS vendor request."
+	def set_speed(self, speed):
+		self.speed = speed
+		self.set_motor()
+	
+	def set_invert(self, invert):
+		self.invert = invert
+		self.set_motor()
 
-    def set_pan(self, val):
-      self.pan = val
-      self.set_positions(self.pan, self.tilt)
+	def set_motor(self):
+		try:
+			self.dev.ctrl_transfer(0x40, self.SET_SPEED, int(self.speed), self.invert)
+		except usb.core.USBError:
+			print "Could not send SET_SPEED vendor request."
 
-    def set_tilt(self, val):
-      self.tilt = val
-      self.set_positions(self.pan, self.tilt)
+	def set_k(self, k):
+		self.k = k
+		self.set_constants()
 
-    def read_val(self):
-       try:
-           ret = self.dev.ctrl_transfer(0xC0, self.GET_VAL, 0, 0, 4)
-       except usb.core.USBError:
-           print "Could not send GET_VAL vendor request."
-       else:
-           return int(ret[0]) + int(ret[1])*256;
+	def set_B(self, B):
+		self.B = B
+		self.set_constants()
 
-    def time_to_dist(self, time):
-        dist = time * 340. / 2 / 1200000
-      	return time
+	def set_constants(self):
+		try:
+			self.dev.ctrl_transfer(0x40, self.SET_CONSTANTS, int(self.k), int(self.B))
+		except usb.core.USBError:
+			print "Could not send SET_SPEED vendor request."
 
-    def ping(self):
-        vals = []
-        try:
-            self.dev.ctrl_transfer(0x40, self.PING)
-            startTime = time.time()
-            while (time.time() - startTime < 0.05):
-              value = self.read_val()
-              if not value in vals:
-                vals.append(self.time_to_dist(value))
-        except usb.core.USBError:
-            print "Could not send PING vendor request."
-        return vals
+	def read_speed(self):
+	   try:
+		   ret = self.dev.ctrl_transfer(0xC0, self.GET_SPEED, 0, 0, 4)
+	   except usb.core.USBError:
+		   print "Could not send GET_SPEED vendor request."
+	   else:
+		   return int(ret[0]) + int(ret[1])*256;
+
+	def read_EMF(self):
+	   try:
+		   ret = self.dev.ctrl_transfer(0xC0, self.GET_EMF, 0, 0, 4)
+	   except usb.core.USBError:
+		   print "Could not send GET_EMF vendor request."
+	   else:
+		   return int(ret[0]) + int(ret[1])*256;
+
+	def read_current(self):
+	   try:
+		   ret = self.dev.ctrl_transfer(0xC0, self.GET_CURRENT, 0, 0, 4)
+	   except usb.core.USBError:
+		   print "Could not send GET_CURRENT vendor request."
+	   else:
+		   return int(ret[0]) + int(ret[1])*256;
+
+	def read_ticks(self):
+	   try:
+		   ret = self.dev.ctrl_transfer(0xC0, self.GET_TICKCOUNT, 0, 0, 4)
+	   except usb.core.USBError:
+		   print "Could not send GET_TICKCOUNT vendor request."
+	   else:
+		   return int(ret[0]) + int(ret[1])*256;
+
