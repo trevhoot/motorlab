@@ -5,11 +5,10 @@ class Device:
 
 	def __init__(self):
 		self.SET_SPEED = 0
-		self.GET_SPEED = 1
+		self.GET_TICKS = 1
 		self.GET_EMF = 2
 		self.GET_CURRENT = 3
 		self.SET_CONSTANTS = 4
-		self.GET_TICKCOUNT = 5
 		self.dev = usb.core.find(idVendor = 0x6666, idProduct = 0x0003)
 		if self.dev is None:
 			raise ValueError('no USB device found matching idVendor = 0x6666 and idProduct = 0x0003')
@@ -76,9 +75,9 @@ class Device:
 
 	def read_ticks(self):
 	   try:
-		   ret = self.dev.ctrl_transfer(0xC0, self.GET_TICKCOUNT, 0, 0, 4)
+		   ret = self.dev.ctrl_transfer(0xC0, self.GET_TICKS, 0, 0, 4)
 	   except usb.core.USBError:
-		   print "Could not send GET_TICKCOUNT vendor request."
+		   print "Could not send GET_TICKS vendor request."
 	   else:
 		   return int(ret[0]) + int(ret[1])*256;
 
