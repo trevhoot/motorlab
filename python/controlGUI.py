@@ -20,7 +20,7 @@ class GUI():
 		b1 = Button(self.root, text = "Tick Count", command = self.get_ticks)
 		b1.pack(anchor=CENTER)
 
-		b2 = Button(self.root, text = "Get Current", command = self.get_current)
+		b2 = Button(self.root, text = "Get Data", command = self.get_data)
 		b2.pack(anchor=CENTER)
 
 		scale2 = Scale(self.root, variable = self.k , from_ = 100, to = 0, orient = VERTICAL, label = "K", command = self.set_k)
@@ -59,6 +59,14 @@ class GUI():
 		current = self.dev.read_current()
 		print current
 
+	def get_data(self):
+		current = self.dev.read_current()
+		emf = self.dev.read_EMF()
+		ticks = self.dev.read_ticks()
+		print "current = %f, back emf = %f, ticks = %f" %(current, emf, ticks)
+
 
 
 g = GUI()
+while 1:
+	g.get_data()
